@@ -7,6 +7,9 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL   = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
+# OpenAI
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 # Data APIs
 FRED_API_KEY         = os.getenv("FRED_API_KEY")
 NEWS_API_KEY         = os.getenv("NEWS_API_KEY")
