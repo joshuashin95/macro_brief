@@ -1,0 +1,19 @@
+# Data collection
+yfinance>=1.2.1
+requests>=2.32.5
+feedparser==6.0.11
+fredapi==0.5.2
+
+# Database
+psycopg2-binary==2.9.10
+sqlalchemy==2.0.40
+
+# AI
+google-genai>=1.0.0
+
+# Discord
+discord.py==2.4.0
+
+# Utils
+python-dotenv==1.1.0
+schedule==1.2.2
