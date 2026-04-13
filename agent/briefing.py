@@ -6,10 +6,8 @@ and returns a formatted macro briefing.
 """
 
 import json
-from google import genai
-from google.genai import types
-from collectors import market, fred, news
-from utils.config import GEMINI_API_KEY, GEMINI_MODEL
+from openai import OpenAI
+from utils.config import OPENAI_API_KEY
 
 
 SYSTEM_PROMPT = """
@@ -66,34 +64,26 @@ def _format_data(market_data: dict, fred_data: dict, news_data: dict) -> str:
 """.strip()
 
 
-def generate() -> str:
-    print("Collecting market data...")
-    market_data = market.fetch()
-
-    print("Collecting FRED data...")
-    fred_data = fred.fetch()
-
-    print("Collecting news...")
-    news_data = news.fetch()
-
-    print("Generating briefing with Gemini...")
-    client = genai.Client(api_key=GEMINI_API_KEY)
+def generate(market_data: dict, fred_data: dict, news_data: dict) -> str:
+    print("Generating briefing with OpenAI...")
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
     prompt = _format_data(market_data, fred_data, news_data)
-    response = client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-        ),
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
     )
 
-    return response.text
+    return response.choices[0].message.content
 
 
 if __name__ == "__main__":
     import sys, io
+    from collectors import market, fred, news
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    briefing = generate()
+    briefing = generate(market.fetch(), fred.fetch(), news.fetch())
     print("\n" + "="*60)
     print(briefing)

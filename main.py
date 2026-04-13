@@ -16,14 +16,28 @@ import asyncio
 import argparse
 import schedule
 import time
+from collectors import market, fred, news
 from agent.briefing import generate
 from bot.discord_bot import post_briefing
+from db.store import save_market, save_rates, save_news, save_briefing
 from utils.config import DISCORD_CHANNEL_ID
 
 
 def run():
-    print("Generating macro briefing...")
-    briefing = generate()
+    print("Collecting data...")
+    market_data = market.fetch()
+    fred_data   = fred.fetch()
+    news_data   = news.fetch()
+
+    print("Saving to database...")
+    save_market(market_data)
+    save_rates(fred_data)
+    save_news(news_data)
+
+    print("Generating briefing...")
+    briefing = generate(market_data, fred_data, news_data)
+    save_briefing(briefing, model="gpt-4o-mini")
+
     print("\n--- BRIEFING ---")
     print(briefing)
     print("--- SENDING TO DISCORD ---")
