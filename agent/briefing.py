@@ -54,14 +54,14 @@ def _format_data(market_data: dict, fred_data: dict, news_data: dict) -> str:
     {"source": a["source"], "title": a["title"], "summary": a.get("summary", "")}
     for a in news_data["rss"]
     if "error" not in a
-], indent=2, ensure_ascii=False)}
+][:10], indent=2, ensure_ascii=False)}
 
 === NEWS HEADLINES (News API) ===
 {json.dumps([
     {"source": a["source"], "title": a["title"], "summary": a.get("summary", "")}
     for a in news_data["newsapi"]
     if "error" not in a
-], indent=2, ensure_ascii=False)}
+][:10], indent=2, ensure_ascii=False)}
 """.strip()
 
 
@@ -75,6 +75,7 @@ def generate(market_data: dict, fred_data: dict, news_data: dict) -> str:
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
+            max_output_tokens=1500,
         ),
     )
 
