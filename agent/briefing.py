@@ -76,7 +76,7 @@ def generate(market_data: dict, fred_data: dict, news_data: dict) -> str:
         contents=prompt,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
-            max_output_tokens=1500,
+            max_output_tokens=2048,
         ),
     )
 
