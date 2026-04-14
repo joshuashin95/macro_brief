@@ -8,9 +8,11 @@ agent/briefing.py
 """
 
 import json
+import time
 from datetime import date
 from google import genai
 from google.genai import types
+from google.api_core.exceptions import ServiceUnavailable, ResourceExhausted
 from utils.config import GEMINI_API_KEY, GEMINI_MODEL
 
 
@@ -91,13 +93,22 @@ def _format_market(market_data: dict, fred_data: dict) -> str:
     )
 
 
-def _call(client, prompt: str, system: str) -> str:
-    response = client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=prompt,
-        config=types.GenerateContentConfig(system_instruction=system),
-    )
-    return response.text.strip()
+def _call(client, prompt: str, system: str, retries: int = 3) -> str:
+    for attempt in range(retries):
+        try:
+            response = client.models.generate_content(
+                model=GEMINI_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(system_instruction=system),
+            )
+            return response.text.strip()
+        except (ServiceUnavailable, ResourceExhausted) as e:
+            if attempt < retries - 1:
+                wait = 10 * (attempt + 1)
+                print(f"Gemini unavailable, retrying in {wait}s... ({attempt+1}/{retries})")
+                time.sleep(wait)
+            else:
+                raise
 
 
 def generate(market_data: dict, fred_data: dict, news_data: dict) -> str:

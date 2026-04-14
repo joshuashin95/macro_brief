@@ -16,7 +16,7 @@ from collectors import market, fred, news
 from agent.briefing import generate
 from bot.discord_bot import post_briefing
 from db.store import save_market, save_rates, save_news, save_briefing
-from utils.config import DISCORD_CHANNEL_ID
+from utils.config import DISCORD_CHANNEL_ID, GEMINI_MODEL
 
 app = FastAPI(title="Macro Brief API")
 
@@ -63,10 +63,15 @@ def run():
         save_news(news_data)
 
         briefing = generate(market_data, fred_data, news_data)
-        save_briefing(briefing, model="gpt-4o-mini")
+        save_briefing(briefing, model=GEMINI_MODEL)
 
         asyncio.run(post_briefing(int(DISCORD_CHANNEL_ID), briefing))
 
         return {"status": "ok", "briefing_preview": briefing[:200]}
     except Exception as e:
+        error_msg = f"⚠️ **브리핑 생성 실패** ({type(e).__name__})\n```{str(e)[:300]}```"
+        try:
+            asyncio.run(post_briefing(int(DISCORD_CHANNEL_ID), error_msg))
+        except Exception:
+            pass
         raise HTTPException(status_code=500, detail=str(e))
